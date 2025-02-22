@@ -44,20 +44,13 @@ jobs:
           -DENABLE_LTO=False \
           -DMINGW_TRIPLE=aarch64-w64-mingw32 \
           -DBUILD_TESTS=False ..
-         make -j$(nproc) wow64fex
-
-    - name: List build artifacts (debug)
-      run: |
-        echo "build_ec contents:"
-        ls -R build_ec
-        echo "build_pe contents:"
-        ls -R build_pe
+         make -j$(nproc) wow64fex 
 
     - name: Package DLLs
       run: |
         tar -cJvf FEX-dll.tar.xz \
-        build_ec/Source/libarm64ecfex.dll \
-        build_pe/Source/libwow64fex.dll
+        build_ec/Bin/libarm64ecfex.dll \
+        build_pe/Bin/libwow64fex.dll
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
