@@ -49,8 +49,8 @@ jobs:
     - name: Package DLLs
       run: |
         tar -cJvf FEX-dll.tar.xz \
-          build_ec/bin/libarm64ecfex.dll \
-          build_pe/bin/libwow64fex.dll
+          build_ec/bin \
+          build_pe/bin
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
