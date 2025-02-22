@@ -26,7 +26,6 @@ jobs:
 
     - name: Build arm64ecfex
       run: |
-        cd FEX
         mkdir -p build_ec
         cd build_ec
         cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -38,7 +37,6 @@ jobs:
 
     - name: Build wow64fex
       run: |
-        cd FEX
         mkdir -p build_pe
         cd build_pe
         cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -51,8 +49,8 @@ jobs:
     - name: Package DLLs
       run: |
         tar -cJvf FEX-dll.tar.xz \
-          FEX/build_ec/bin/libarm64ecfex.dll \
-          FEX/build_pe/bin/libwow64fex.dll
+          build_ec/bin/libarm64ecfex.dll \
+          build_pe/bin/libwow64fex.dll
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
