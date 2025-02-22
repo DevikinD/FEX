@@ -1,0 +1,61 @@
+name: Build FEX
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-fex:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout FEX with submodules
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install llvm-mingw
+      run: |
+        sudo mkdir -p /opt
+        curl -L -o llvm-mingw.tar.xz \
+          https://github.com/bylaws/llvm-mingw/releases/download/20241812/llvm-mingw-20241218-ucrt-ubuntu-20.04-x86_64.tar.xz
+        sudo tar -xJf llvm-mingw.tar.xz -C /opt/
+        echo "PATH=/opt/bylaws-llvm-mingw-20241218-ucrt-ubuntu-20.04-x86_64/bin:$PATH" >> $GITHUB_ENV
+
+    - name: Build arm64ecfex
+      run: |
+        cd FEX
+        mkdir -p build_ec
+        cd build_ec
+        cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+              -DCMAKE_TOOLCHAIN_FILE=../toolchain_mingw.cmake \
+              -DENABLE_LTO=False \
+              -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
+              -DBUILD_TESTS=False ..
+        make -j$(nproc) arm64ecfex
+
+    - name: Build wow64fex
+      run: |
+        cd FEX
+        mkdir -p build_pe
+        cd build_pe
+        cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+              -DCMAKE_TOOLCHAIN_FILE=../toolchain_mingw.cmake \
+              -DENABLE_LTO=False \
+              -DMINGW_TRIPLE=aarch64-w64-mingw32 \
+              -DBUILD_TESTS=False ..
+        make -j$(nproc) wow64fex
+
+    - name: Package DLLs
+      run: |
+        tar -cJvf FEX-dll.tar.xz \
+          FEX/build_ec/bin/libarm64ecfex.dll \
+          FEX/build_pe/bin/libwow64fex.dll
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FEX-dll
+        path: FEX-dll.tar.xz
