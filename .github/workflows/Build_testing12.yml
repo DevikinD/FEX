@@ -48,12 +48,13 @@ jobs:
 
     - name: Package DLLs
       run: |
-        tar -cJvf FEX-dll.tar.xz \
-        build_ec/Bin/libarm64ecfex.dll \
-        build_pe/Bin/libwow64fex.dll
+       mkdir -p FEX-dll
+       cp build_ec/Bin/libarm64ecfex.dll FEX-dll/
+       cp build_pe/Bin/libwow64fex.dll FEX-dll/
+       tar -cJvf FEX-dlls.tar.xz -C FEX-dll .
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: FEX-dll
-        path: FEX-dll.tar.xz
+        path: FEX-dlls.tar.xz
