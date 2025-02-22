@@ -29,10 +29,10 @@ jobs:
         mkdir -p build_ec
         cd build_ec
         cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-              -DCMAKE_TOOLCHAIN_FILE=../toolchain_mingw.cmake \
-              -DENABLE_LTO=False \
-              -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
-              -DBUILD_TESTS=False ..
+          -DCMAKE_TOOLCHAIN_FILE=../toolchain_mingw.cmake \
+          -DENABLE_LTO=False \
+          -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
+          -DBUILD_TESTS=False ..
         make -j$(nproc) arm64ecfex
 
     - name: Build wow64fex
@@ -40,17 +40,24 @@ jobs:
         mkdir -p build_pe
         cd build_pe
         cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-              -DCMAKE_TOOLCHAIN_FILE=../toolchain_mingw.cmake \
-              -DENABLE_LTO=False \
-              -DMINGW_TRIPLE=aarch64-w64-mingw32 \
-              -DBUILD_TESTS=False ..
-        make -j$(nproc) wow64fex
+          -DCMAKE_TOOLCHAIN_FILE=../toolchain_mingw.cmake \
+          -DENABLE_LTO=False \
+          -DMINGW_TRIPLE=aarch64-w64-mingw32 \
+          -DBUILD_TESTS=False ..
+         make -j$(nproc) wow64fex
+
+    - name: List build artifacts (debug)
+      run: |
+        echo "build_ec contents:"
+        ls -R build_ec
+        echo "build_pe contents:"
+        ls -R build_pe
 
     - name: Package DLLs
       run: |
         tar -cJvf FEX-dll.tar.xz \
-          build_ec/bin \
-          build_pe/bin
+        build_ec/Source/libarm64ecfex.dll \
+        build_pe/Source/libwow64fex.dll
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
