@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-fex:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout FEX with submodules
@@ -32,6 +32,8 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=../toolchain_mingw.cmake \
           -DENABLE_LTO=False \
           -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
           -DBUILD_TESTS=False ..
         make -j$(nproc) arm64ecfex
 
@@ -43,6 +45,8 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=../toolchain_mingw.cmake \
           -DENABLE_LTO=False \
           -DMINGW_TRIPLE=aarch64-w64-mingw32 \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
           -DBUILD_TESTS=False ..
          make -j$(nproc) wow64fex 
 
@@ -51,10 +55,10 @@ jobs:
        mkdir -p FEX-dll
        cp build_ec/Bin/libarm64ecfex.dll FEX-dll/
        cp build_pe/Bin/libwow64fex.dll FEX-dll/
-       tar -cJvf FEX-dlls.tar.xz -C FEX-dll .
+       tar -cJvf fex-dlls.tar.xz -C FEX-dll .
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: FEX-dll
-        path: FEX-dlls.tar.xz
+        path: fex-dlls.tar.xz
