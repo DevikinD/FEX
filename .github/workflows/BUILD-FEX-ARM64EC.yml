@@ -64,6 +64,5 @@ jobs:
       with:
         tag_name: FEX-arm64ec
         files: fex-dlls.tar.xz
-        update: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
