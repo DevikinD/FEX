@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-fex:
@@ -24,7 +25,7 @@ jobs:
         sudo tar -xvf llvm-mingw.tar.xz -C /opt/
         echo "PATH=/opt/llvm-mingw-20241218-ucrt-ubuntu-20.04-x86_64/bin:$PATH" >> $GITHUB_ENV
 
-    - name: Build arm64ecfex
+    - name: Build libarm64ecfex
       run: |
         mkdir -p build_ec
         cd build_ec
@@ -37,7 +38,7 @@ jobs:
           -DBUILD_TESTS=False ..
         make -j$(nproc) arm64ecfex
 
-    - name: Build wow64fex
+    - name: Build libwow64fex
       run: |
         mkdir -p build_pe
         cd build_pe
@@ -50,15 +51,19 @@ jobs:
           -DBUILD_TESTS=False ..
          make -j$(nproc) wow64fex 
 
-    - name: Package DLLs
+    - name: Package FEX DLLs
       run: |
-       mkdir -p FEX-dll
-       cp build_ec/Bin/libarm64ecfex.dll FEX-dll/
-       cp build_pe/Bin/libwow64fex.dll FEX-dll/
-       tar -cJvf fex-dlls.tar.xz -C FEX-dll .
+        mkdir -p FEX-dll
+        cp build_ec/Bin/libarm64ecfex.dll FEX-dll/
+        cp build_pe/Bin/libwow64fex.dll FEX-dll/
+        tar -cJvf fex-dlls.tar.xz -C FEX-dll .
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
+    - name: Upload to Release
+      if: success() && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.head_commit.message == "Merge branch 'FEX-Emu:main' into main"))
+      uses: softprops/action-gh-release@v2
       with:
-        name: FEX-dll
-        path: fex-dlls.tar.xz
+        tag_name: FEX-arm64ec
+        files: fex-dlls.tar.xz
+        update: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
