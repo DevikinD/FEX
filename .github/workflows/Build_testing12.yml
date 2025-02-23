@@ -59,7 +59,7 @@ jobs:
         tar -cJvf fex-dlls.tar.xz -C FEX-dll .
 
     - name: Upload to Release
-      if: success() && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.head_commit.message == 'Merge branch*'))
+      if: success() && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main' && trim(github.event.head_commit.message) == 'Merge*'))
       uses: softprops/action-gh-release@v2
       with:
         tag_name: FEX-arm64ec
