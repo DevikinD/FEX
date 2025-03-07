@@ -21,9 +21,9 @@ jobs:
       run: |
         sudo mkdir -p /opt
         curl -L -o llvm-mingw.tar.xz \
-          https://github.com/bylaws/llvm-mingw/releases/download/20241812/llvm-mingw-20241218-ucrt-ubuntu-20.04-x86_64.tar.xz
+          https://github.com/bylaws/llvm-mingw/releases/download/20250228/llvm-mingw-20250228-ucrt-ubuntu-20.04-x86_64.tar.xz
         sudo tar -xvf llvm-mingw.tar.xz -C /opt/
-        echo "PATH=/opt/llvm-mingw-20241218-ucrt-ubuntu-20.04-x86_64/bin:$PATH" >> $GITHUB_ENV
+        echo "PATH=/opt/llvm-mingw-20250228-ucrt-ubuntu-20.04-x86_64/bin:$PATH" >> $GITHUB_ENV
 
     - name: Build libarm64ecfex
       run: |
