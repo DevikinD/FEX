@@ -1589,7 +1589,7 @@ void OpDispatchBuilder::RotateOp(OpcodeArgs, bool Left, bool IsImmediate, bool I
 
   const uint32_t Size = GetSrcBitSize(Op);
   const auto OpSize = Size == 64 ? OpSize::i64Bit : OpSize::i32Bit;
-  uint64_t UnmaskedConst;
+  uint64_t UnmaskedConst {};
 
   // x86 masks the shift by 0x3F or 0x1F depending on size of op. But it's
   // equivalent to mask to the actual size of the op, that way we can bound
@@ -2658,7 +2658,7 @@ void OpDispatchBuilder::MULOp(OpcodeArgs) {
 
   Ref Src1 = LoadSource(GPRClass, Op, Op->Dest, Op->Flags, {.AllowUpperGarbage = true});
   Ref Src2 = LoadGPRRegister(X86State::REG_RAX);
-  Ref Result;
+  Ref Result {};
 
   if (Size != OpSize::i64Bit) {
     Src1 = _Bfe(OpSize::i64Bit, SizeBits, 0, Src1);
@@ -2999,6 +2999,22 @@ void OpDispatchBuilder::SGDTOp(OpcodeArgs) {
 
   _StoreMemAutoTSO(GPRClass, OpSize::i16Bit, DestAddress, _Constant(0));
   _StoreMemAutoTSO(GPRClass, GDTStoreSize, AddressMode {.Base = DestAddress, .Offset = 2, .AddrSize = OpSize::i64Bit}, _Constant(GDTAddress));
+}
+
+void OpDispatchBuilder::SIDTOp(OpcodeArgs) {
+  auto DestAddress = LoadSource(GPRClass, Op, Op->Dest, Op->Flags, {.LoadData = false});
+
+  // See SGDTOp, matches Linux in reported values
+  uint64_t IDTAddress = 0xFFFFFE0000000000ULL;
+  auto IDTStoreSize = OpSize::i64Bit;
+  if (!CTX->Config.Is64BitMode) {
+    // Mask off upper bits if 32-bit result.
+    IDTAddress &= ~0U;
+    IDTStoreSize = OpSize::i32Bit;
+  }
+
+  _StoreMemAutoTSO(GPRClass, OpSize::i16Bit, DestAddress, _Constant(0xfff));
+  _StoreMemAutoTSO(GPRClass, IDTStoreSize, AddressMode {.Base = DestAddress, .Offset = 2, .AddrSize = OpSize::i64Bit}, _Constant(IDTAddress));
 }
 
 void OpDispatchBuilder::SMSWOp(OpcodeArgs) {
@@ -4666,6 +4682,12 @@ void OpDispatchBuilder::ALUOp(OpcodeArgs, FEXCore::IR::IROps ALUIROp, FEXCore::I
   if (!DestIsLockedMem(Op)) {
     StoreResult_WithOpSize(GPRClass, Op, Op->Dest, Result, ResultSize, OpSize::iInvalid, MemoryAccessType::DEFAULT);
   }
+}
+
+void OpDispatchBuilder::LSLOp(OpcodeArgs) {
+  // Emulate by always returning failure, this deviates from both Linux and Windows but
+  // shouldn't be depended on by anything.
+  SetRFLAG<FEXCore::X86State::RFLAG_ZF_RAW_LOC>(_Constant(0));
 }
 
 void OpDispatchBuilder::INTOp(OpcodeArgs) {

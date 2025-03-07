@@ -783,7 +783,7 @@ void OpDispatchBuilder::AVX128_VZERO(OpcodeArgs) {
   if (IsVZEROALL) {
     // NOTE: Despite the name being VZEROALL, this will still only ever
     //       zero out up to the first 16 registers (even on AVX-512, where we have 32 registers)
-    Ref ZeroVector;
+    Ref ZeroVector {};
 
     for (uint32_t i = 0; i < NumRegs; i++) {
       // Explicitly not caching named vector zero. This ensures that every register gets movi #0.0 directly.
@@ -2032,7 +2032,18 @@ void OpDispatchBuilder::AVX128_VPALIGNR(OpcodeArgs) {
       return Src2;
     }
 
-    return _VExtr(OpSize::i128Bit, OpSize::i8Bit, Src1, Src2, Index);
+    if (Index == 16) {
+      return Src1;
+    }
+
+    auto SanitizedIndex = Index;
+    if (Index > 16) {
+      Src2 = Src1;
+      Src1 = LoadZeroVector(OpSize::i128Bit);
+      SanitizedIndex -= 16;
+    }
+
+    return _VExtr(OpSize::i128Bit, OpSize::i8Bit, Src1, Src2, SanitizedIndex);
   });
 }
 
@@ -2052,9 +2063,7 @@ void OpDispatchBuilder::AVX128_VMASKMOVImpl(OpcodeArgs, IR::OpSize ElementSize, 
     auto Data = AVX128_LoadSource_WithOpSize(Op, DataOp, Op->Flags, !Is128Bit);
     _VStoreVectorMasked(OpSize::i128Bit, ElementSize, Mask.Low, Data.Low, Address, Invalid(), MEM_OFFSET_SXTX, 1);
     if (!Is128Bit) {
-      ///< TODO: This can be cleaner if AVX128_LoadSource_WithOpSize could return both constructed addresses.
-      auto AddressHigh = _Add(OpSize::i64Bit, Address, _Constant(16));
-      _VStoreVectorMasked(OpSize::i128Bit, ElementSize, Mask.High, Data.High, AddressHigh, Invalid(), MEM_OFFSET_SXTX, 1);
+      _VStoreVectorMasked(OpSize::i128Bit, ElementSize, Mask.High, Data.High, Address, _InlineConstant(16), MEM_OFFSET_SXTX, 1);
     }
   } else {
     auto Address = MakeAddress(DataOp);
@@ -2065,9 +2074,7 @@ void OpDispatchBuilder::AVX128_VMASKMOVImpl(OpcodeArgs, IR::OpSize ElementSize, 
     if (Is128Bit) {
       Result.High = LoadZeroVector(OpSize::i128Bit);
     } else {
-      ///< TODO: This can be cleaner if AVX128_LoadSource_WithOpSize could return both constructed addresses.
-      auto AddressHigh = _Add(OpSize::i64Bit, Address, _Constant(16));
-      Result.High = _VLoadVectorMasked(OpSize::i128Bit, ElementSize, Mask.High, AddressHigh, Invalid(), MEM_OFFSET_SXTX, 1);
+      Result.High = _VLoadVectorMasked(OpSize::i128Bit, ElementSize, Mask.High, Address, _InlineConstant(16), MEM_OFFSET_SXTX, 1);
     }
     AVX128_StoreResult_WithOpSize(Op, Op->Dest, Result);
   }

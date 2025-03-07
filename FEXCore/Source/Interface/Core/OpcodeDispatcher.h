@@ -302,6 +302,7 @@ public:
   void MOVVectorUnalignedOp(OpcodeArgs);
   void MOVVectorNTOp(OpcodeArgs);
   void ALUOp(OpcodeArgs, FEXCore::IR::IROps ALUIROp, FEXCore::IR::IROps AtomicFetchOp, unsigned SrcIdx);
+  void LSLOp(OpcodeArgs);
   void INTOp(OpcodeArgs);
   void SyscallOp(OpcodeArgs, bool IsSyscallInst);
   void ThunkOp(OpcodeArgs);
@@ -417,6 +418,7 @@ public:
   void EnterOp(OpcodeArgs);
 
   void SGDTOp(OpcodeArgs);
+  void SIDTOp(OpcodeArgs);
   void SMSWOp(OpcodeArgs);
 
   enum class VectorOpType {
@@ -434,6 +436,7 @@ public:
 
   void VectorALUROp(OpcodeArgs, IROps IROp, IR::OpSize ElementSize);
   void VectorUnaryOp(OpcodeArgs, IROps IROp, IR::OpSize ElementSize);
+  void RSqrt3DNowOp(OpcodeArgs, bool Duplicate);
   template<FEXCore::IR::IROps IROp, IR::OpSize ElementSize>
   void VectorUnaryDuplicateOp(OpcodeArgs);
 
