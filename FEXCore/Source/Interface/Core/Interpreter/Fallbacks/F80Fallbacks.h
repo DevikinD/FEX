@@ -1,6 +1,6 @@
+// SPDX-License-Identifier: MIT
 #pragma once
 #include "Common/SoftFloat.h"
-#include "Common/SoftFloat-3e/softfloat.h"
 
 #include "Interface/Core/Interpreter/Fallbacks/FallbackOpHandler.h"
 #include "Interface/IR/IR.h"
