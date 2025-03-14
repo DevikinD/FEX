@@ -168,7 +168,7 @@ def HandleFunctionDeclCursor(Arch, Cursor):
 
 def PrintFunctionDecls():
     for Decl in FunctionDecls:
-        print("template<> struct fex_gen_config<{}> {{}};".format(Decl.Name))
+        print("template<>\nstruct fex_gen_config<{}> {{}};".format(Decl.Name))
 
 def FindClangArguments(OriginalArguments):
     AddedArguments = ["clang"]
@@ -529,9 +529,9 @@ def main():
         BaseArgs.append(sys.argv[ArgIndex])
 
     args_x86_64 = [
-        "-I/usr/include/x86_64-linux-gnu",
-        "-I/usr/x86_64-linux-gnu/include/c++/10/x86_64-linux-gnu/",
-        "-I/usr/x86_64-linux-gnu/include/",
+        "-isystem", "/usr/include/x86_64-linux-gnu",
+        "-isystem", "/usr/x86_64-linux-gnu/include/c++/10/x86_64-linux-gnu/",
+        "-isystem", "/usr/x86_64-linux-gnu/include/",
         "-O2",
         "--target=x86_64-linux-unknown",
         "-D_M_X86_64",
